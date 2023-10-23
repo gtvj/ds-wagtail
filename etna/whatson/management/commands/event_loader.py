@@ -1,14 +1,11 @@
 from django.core.management.base import BaseCommand
-import re
 import pprint
-from datetime import datetime
-from etna.images.models import CustomImage
 from ...apiutils import populate_event_data, get_or_create_event_type, add_or_update_event_page, display_data
 from ...tna_eventbrite import TNAEventbrite
 
 EVENTBRITE_PRIVATE_TOKEN = "5NB2D6KB5WI7M4FGA7DW"
 EVENTBRITE_TNA_ORGANISATION_ID = "32190014757"
-EVENTBRITE_EVENTS_EXPANSION = "description,category,organizer,venue,format,ticket_classes,ticket_class_id,ticket_buyer_settings"
+EVENTBRITE_EVENTS_EXPANSION = "description,category,organizer,venue,format,ticket_classes,ticket_class_id,ticket_buyer_settings,event_series"
 EVENTBRITE_ORGANIZER_ID = "2226699547"
 EVENTBRITE_API_BASE_URL = "https://www.eventbriteapi.com/v3/"
 
@@ -37,10 +34,13 @@ class Command(BaseCommand):
                 organiser_id=EVENTBRITE_ORGANIZER_ID,
                 expand=EVENTBRITE_EVENTS_EXPANSION,
             )
-            if debug == 2:
+            if debug == 1:
                 print(evs.pretty)
         except:
             pass
+
+        
+
 
         # We are expecting a json response with two components: a pagination block and a list of events.
         eventlist = evs["events"]
@@ -61,6 +61,10 @@ class Command(BaseCommand):
                 # Save required data in new dictionary
                 event_data = populate_event_data(event, desc)
 
+                if event.get('series_id', False):
+                    es = eventbrite.get_event_series(event['series_id'])
+                    print(f"Event Series: [{es.pretty}]")
+
                 event_data["event_type"] = get_or_create_event_type(
                     event["format"]["short_name"], event["format"]["id"]
                 )
@@ -76,23 +80,26 @@ class Command(BaseCommand):
                 add_or_update_event_page(event_data)
 
                 if debug == 1:
-                    print(
-                        f"ID: {event['id']}#"
-                        f"{event['start']['local']}#"
-                        f"{event['hide_start_date']:{1}}#"
-                        f"{event['hide_end_date']:{1}}#"
-                        f"{event['is_externally_ticketed']:{1}}#"
-                        f"{event['is_free']:{1}}#"
-                        f"{event['is_locked']:{1}}#"
-                        f"{event['is_reserved_seating']:{1}}#"
-                        f"{event['is_series']:{1}}#"
-                        f"{event['is_series_parent']:{1}}#"
-                        f"{event['listed']:{1}}#"
-                        f"{event.get('logo_id', '?'):{10}}#"
-                        f"{event.get('organizer_id', '?'):{10}}#"
-                        f"{event.get('privacy_setting', '?'):{8}}#"
-                        f"{event['name']['text']}"
-                    )
+                    try:
+                        print(
+                            f"ID: {event['id']}#"
+                            f"{event['start']['local']}#"
+                            f"{event['hide_start_date']:{1}}#"
+                            f"{event['hide_end_date']:{1}}#"
+                            f"{event['is_externally_ticketed']:{1}}#"
+                            f"{event['is_free']:{1}}#"
+                            f"{event['is_locked']:{1}}#"
+                            f"{event['is_reserved_seating']:{1}}#"
+                            f"{event['is_series']:{1}}#"
+                            f"{event['is_series_parent']:{1}}#"
+                            f"{event['listed']:{1}}#"
+                            f"{event.get('logo_id', '?'):{10}}#"
+                            f"{event.get('organizer_id', '?'):{10}}#"
+                            f"{event.get('privacy_setting', '?'):{8}}#"
+                            f"{event['name']['text']}"
+                        )
+                    except:
+                        pass
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(

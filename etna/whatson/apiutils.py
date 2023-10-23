@@ -1,4 +1,7 @@
-from models import EventType, EventPage, VenueType
+from .models import EventType, EventPage, VenueType
+from datetime import datetime
+from etna.images.models import CustomImage
+import re
 
 # Doesn't work yet!
 def get_prices_minmax(ticket_classes):
@@ -22,6 +25,7 @@ def populate_event_data(event, event_description):
     pattern = re.compile("<.*?>")
     event_data = {}
 
+    # Remove html
     event_data["description"] = re.sub(
         pattern, " ", event_description.get("description")
     )
@@ -66,10 +70,10 @@ def populate_event_data(event, event_description):
     event_data["video_conference_info"] = "TBC"
     event_data["registration_url"] = event["url"]
 
-    if event.get("ticket_classes", False):  # value may not be in the dict
-        event_data["min_price"], event_data["max_price"] = get_prices_minmax(
-            event["ticket_classes"]
-        )
+    #if event.get("ticket_classes", False):  # value may not be in the dict
+    #    event_data["min_price"], event_data["max_price"] = get_prices_minmax(
+    #        event["ticket_classes"]
+    #    )
 
     event_data["eventbrite_id"] = event["id"]
     event_data["registration_info"] = "TBC"
@@ -144,9 +148,9 @@ def add_or_update_event_page(event):
         venue_space_name=event["venue_space_name"],
         video_conference_info=event["video_conference_info"],
         registration_url=event["registration_url"],
-        min_price=event["min_price"],
-        max_price=event["max_price"],
-        eventbrite_id=event["eventbrite_id"],
+        #min_price=event["min_price"],
+        #max_price=event["max_price"],
+        #eventbrite_id=event["eventbrite_id"],
         registration_info=event["registration_info"],
         contact_info=event["contact_info"],
         short_title=event["short_title"],
@@ -161,4 +165,4 @@ def add_or_update_event_page(event):
         teaser_text="TEASER",
         intro="INTRO",
     )
-    ep.save()
+    #ep.save()

@@ -24,6 +24,7 @@ class VenueType(models.TextChoices):
     ONLINE = "online", _("Online")
     IN_PERSON = "in_person", _("In person")
     HYBRID = "hybrid", _("Hybrid")
+    TBA = "tba", _("TBA")
 
 
 @register_snippet
@@ -285,6 +286,12 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
 
     A page for an event.
     """
+
+    eventbrite_id = models.IntegerField(
+        verbose_name=_("Eventbrite event id"),
+        null=False,
+        editable=True,
+    )
 
     # Content
     lead_image = models.ForeignKey(

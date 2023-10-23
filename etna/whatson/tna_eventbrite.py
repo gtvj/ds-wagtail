@@ -29,3 +29,6 @@ class TNAEventbrite(Eventbrite):
 
     def get_questions(self, event_id, **data):
         return self.get(f"/events/{event_id}/questions", data=data)
+
+    def get_event_series(self, series_id, **data):
+        return self.get(f"/series/{series_id}")
