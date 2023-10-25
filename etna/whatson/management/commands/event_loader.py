@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 import pprint
-from ...apiutils import populate_event_data, get_or_create_event_type, add_or_update_event_page, display_data
+from ...apiutils import populate_event_data, get_or_create_event_type, add_or_update_event_page, display_data, temp_truncate_events
 from ...tna_eventbrite import TNAEventbrite
 
 EVENTBRITE_PRIVATE_TOKEN = "5NB2D6KB5WI7M4FGA7DW"
@@ -39,24 +39,21 @@ class Command(BaseCommand):
         except:
             pass
 
-        
-
-
         # We are expecting a json response with two components: a pagination block and a list of events.
         eventlist = evs["events"]
         pagination = evs["pagination"]
 
         # Temporary code for testing
-        # EventType.objects.all().delete()
+        temp_truncate_events()
 
         # Now loop through the events
         while True:
             for event in eventlist:
                 # For each event, get the following fields - these can't be obtained by using the expand feature unfortunately.
                 desc = eventbrite.get_description(event["id"])
-                capacity = eventbrite.get_capacity_tier(event["id"])
-                teams = eventbrite.get_teams(event["id"])
-                questions = eventbrite.get_questions(event["id"])
+                #capacity = eventbrite.get_capacity_tier(event["id"])
+                #teams = eventbrite.get_teams(event["id"])
+                #questions = eventbrite.get_questions(event["id"])
 
                 # Save required data in new dictionary
                 event_data = populate_event_data(event, desc)
@@ -78,28 +75,6 @@ class Command(BaseCommand):
                     print(f"Event Type: {event['format']['short_name']}")
 
                 add_or_update_event_page(event_data)
-
-                if debug == 1:
-                    try:
-                        print(
-                            f"ID: {event['id']}#"
-                            f"{event['start']['local']}#"
-                            f"{event['hide_start_date']:{1}}#"
-                            f"{event['hide_end_date']:{1}}#"
-                            f"{event['is_externally_ticketed']:{1}}#"
-                            f"{event['is_free']:{1}}#"
-                            f"{event['is_locked']:{1}}#"
-                            f"{event['is_reserved_seating']:{1}}#"
-                            f"{event['is_series']:{1}}#"
-                            f"{event['is_series_parent']:{1}}#"
-                            f"{event['listed']:{1}}#"
-                            f"{event.get('logo_id', '?'):{10}}#"
-                            f"{event.get('organizer_id', '?'):{10}}#"
-                            f"{event.get('privacy_setting', '?'):{8}}#"
-                            f"{event['name']['text']}"
-                        )
-                    except:
-                        pass
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(

@@ -9,12 +9,14 @@ class TNAEventbrite(Eventbrite):
         if continuation:
             # return self.get(f"/organizations/{org_id}/events/?expand.event=organizer,venue&time_filter=current_future&order_by=start_desc&status=live,draft,started&continuation={continuation}", data=data)
             return self.get(
-                f"/organizations/{organisation_id}/events/?page_size=200&time_filter=current_future&order_by=start_desc&status=live,draft,started&organizer_filter={organiser_id}&continuation={continuation}",
+                #f"/organizations/{organisation_id}/events/?page_size=200&time_filter=current_future&order_by=start_desc&status=live,draft,started&organizer_filter={organiser_id}&continuation={continuation}",
+                f"/organizations/{organisation_id}/events/?page_size=200&order_by=start_desc&status=draft&organizer_filter={organiser_id}&continuation={continuation}",
                 data=data,
             )
         else:
             return self.get(
-                f"/organizations/{organisation_id}/events/?page_size=200&time_filter=current_future&order_by=start_desc&status=live,draft,started&organizer_filter={organiser_id}",
+                #f"/organizations/{organisation_id}/events/?page_size=200&time_filter=current_future&order_by=start_desc&status=live,draft,started&organizer_filter={organiser_id}",
+                f"/organizations/{organisation_id}/events/?page_size=200&order_by=start_desc&status=draft&organizer_filter={organiser_id}",
                 data=data,
             )
 

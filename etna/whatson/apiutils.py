@@ -1,7 +1,9 @@
-from .models import EventType, EventPage, VenueType
+from .models import EventType, EventPage, VenueType, WhatsOnPage
 from datetime import datetime
 from etna.images.models import CustomImage
 import re
+
+import pprint as pp
 
 # Doesn't work yet!
 def get_prices_minmax(ticket_classes):
@@ -30,7 +32,7 @@ def populate_event_data(event, event_description):
         pattern, " ", event_description.get("description")
     )
 
-    event_data["lead_image"] = CustomImage(title="Unknown")
+    event_data["lead_image"] = '' #CustomImage(title="Unknown")
     event_data["event_type"] = event["format"]["short_name"]
 
     event_data["start_date"] = datetime.strptime(
@@ -122,7 +124,7 @@ def populate_questions(questions):
 def display_data():
     all_events = EventPage.objects.all().values()
 
-    print(f"All Events: {all_events}")
+    print(f"All Events: {pp.pprint(all_events)}")
 
 
 def get_or_create_event_type(event_type, event_type_id):
@@ -135,7 +137,9 @@ def get_or_create_event_type(event_type, event_type_id):
     return obj
 
 
-def add_or_update_event_page(event):
+def add_or_update_event_page(event, wop):
+    wop = WhatsOnPage.objects.first()
+
     ep = EventPage(
         start_date=event["start_date"],
         end_date=event["end_date"],
@@ -150,19 +154,25 @@ def add_or_update_event_page(event):
         registration_url=event["registration_url"],
         #min_price=event["min_price"],
         #max_price=event["max_price"],
-        #eventbrite_id=event["eventbrite_id"],
+        eventbrite_id=event["eventbrite_id"],
         registration_info=event["registration_info"],
         contact_info=event["contact_info"],
-        short_title=event["short_title"],
+        short_title="Hello", # event["short_title"],
         # The following fields are Wagtail fields and have to be supplied - don't yet know
         # how they will be handled
         event_type=event["event_type"],
-        path="PATH",
-        title="TITLE",
-        depth=1,
-        lead_image=event["lead_image"],
-        slug=event["eventbrite_id"],
+        #path="PATH" + event['eventbrite_id'],
+        title="TITLE " + event['eventbrite_id'],
+        #depth=1,
+        #lead_image=event["lead_image"],
+        #slug=event["eventbrite_id"],
         teaser_text="TEASER",
         intro="INTRO",
     )
+
+    wop.add_child(instance=ep)
     #ep.save()
+
+
+def temp_truncate_events():
+    EventType.objects.all().delete()

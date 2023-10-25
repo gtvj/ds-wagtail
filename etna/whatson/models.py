@@ -287,7 +287,8 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
     A page for an event.
     """
 
-    eventbrite_id = models.IntegerField(
+    eventbrite_id = models.CharField(
+        max_length=15,
         verbose_name=_("Eventbrite event id"),
         null=False,
         editable=True,
@@ -297,6 +298,7 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
     lead_image = models.ForeignKey(
         get_image_model_string(),
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
     )
