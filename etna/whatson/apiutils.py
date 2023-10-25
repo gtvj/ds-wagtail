@@ -1,4 +1,4 @@
-from .models import EventType, EventPage, VenueType, WhatsOnPage
+from .models import EventType, EventPage, EventSession, VenueType, WhatsOnPage
 from datetime import datetime
 from etna.images.models import CustomImage
 import re
@@ -7,7 +7,7 @@ import pprint as pp
 
 # Doesn't work yet!
 def get_prices_minmax(ticket_classes):
-    mintp = 12345.67
+    mintp = 0.0
     maxtp = 0.0
 
     for tp in ticket_classes:
@@ -16,9 +16,8 @@ def get_prices_minmax(ticket_classes):
                 mintp = float(tp["cost"]["major_value"])
             if float(tp["cost"]["major_value"]) > maxtp:
                 maxtp = float(tp["cost"]["major_value"])
-
-    if mintp == 12345.67:
-        mintp = 0.0
+        else:
+            mintp = 0.0
 
     return mintp, maxtp
 
@@ -41,8 +40,8 @@ def populate_event_data(event, event_description):
     event_data["end_date"] = datetime.strptime(
         event["end"]["local"], "%Y-%m-%dT%H:%M:%S"
     )  #'2024-03-15T14:00:00'
-    event_data["useful_info"] = "TBC"
-    event_data["target_audience"] = "TBC"
+    event_data["useful_info"] = ""
+    event_data["target_audience"] = ""
 
     if event["venue"]:  # value always there but may be None
         if not event["online_event"]:
@@ -72,17 +71,20 @@ def populate_event_data(event, event_description):
     event_data["video_conference_info"] = "TBC"
     event_data["registration_url"] = event["url"]
 
-    #if event.get("ticket_classes", False):  # value may not be in the dict
-    #    event_data["min_price"], event_data["max_price"] = get_prices_minmax(
-    #        event["ticket_classes"]
-    #    )
+    if event.get("ticket_classes", False):  # value may not be in the dict
+        event_data["min_price"], event_data["max_price"] = get_prices_minmax(
+            event["ticket_classes"]
+        )
+    else:
+        event_data["min_price"] = 0
+        event_data["max_price"] = 0
 
     event_data["eventbrite_id"] = event["id"]
     event_data["registration_info"] = "TBC"
     event_data["contact_info"] = "TBC"
     event_data["short_title"] = event["name"]["text"]
 
-    print(event_data)
+    pp.pprint(event_data)
 
     return event_data
 
@@ -136,9 +138,11 @@ def get_or_create_event_type(event_type, event_type_id):
 
     return obj
 
+def get_whats_on_page():
+    return WhatsOnPage.objects.first()
+
 
 def add_or_update_event_page(event, wop):
-    wop = WhatsOnPage.objects.first()
 
     ep = EventPage(
         start_date=event["start_date"],
@@ -152,17 +156,17 @@ def add_or_update_event_page(event, wop):
         venue_space_name=event["venue_space_name"],
         video_conference_info=event["video_conference_info"],
         registration_url=event["registration_url"],
-        #min_price=event["min_price"],
-        #max_price=event["max_price"],
+        min_price=event["min_price"],
+        max_price=event["max_price"],
         eventbrite_id=event["eventbrite_id"],
         registration_info=event["registration_info"],
         contact_info=event["contact_info"],
-        short_title="Hello", # event["short_title"],
+        short_title=event["short_title"],
         # The following fields are Wagtail fields and have to be supplied - don't yet know
         # how they will be handled
         event_type=event["event_type"],
         #path="PATH" + event['eventbrite_id'],
-        title="TITLE " + event['eventbrite_id'],
+        title=event["short_title"],
         #depth=1,
         #lead_image=event["lead_image"],
         #slug=event["eventbrite_id"],
@@ -170,9 +174,15 @@ def add_or_update_event_page(event, wop):
         intro="INTRO",
     )
 
+    #wop.dump_bulk()
     wop.add_child(instance=ep)
     #ep.save()
 
 
-def temp_truncate_events():
-    EventType.objects.all().delete()
+def temp_truncate_events(wop):
+    #EventType.objects.all().delete()
+    #EventPage.objects.all().delete()
+    #EventSession.objects.all().delete()
+    #for node in wop.Nodes:
+    #    node.Nodes.Clear
+    pass

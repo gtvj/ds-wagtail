@@ -437,9 +437,9 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
         editable=False,
     )
 
-    eventbrite_id = models.CharField(
-        max_length=255,
-        verbose_name=_("eventbrite ID"),
+    series_id = models.CharField(
+        max_length=15,
+        verbose_name=_("Series ID"),
         null=True,
         editable=False,
     )
@@ -459,7 +459,7 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
 
     # Promote tab
     short_title = models.CharField(
-        max_length=50,
+        max_length=150,
         verbose_name=_("short title"),
         blank=True,
         help_text=_(

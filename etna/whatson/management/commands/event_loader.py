@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 import pprint
-from ...apiutils import populate_event_data, get_or_create_event_type, add_or_update_event_page, display_data, temp_truncate_events
+from ...apiutils import *
 from ...tna_eventbrite import TNAEventbrite
 
 EVENTBRITE_PRIVATE_TOKEN = "5NB2D6KB5WI7M4FGA7DW"
@@ -24,7 +24,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         debug = 1
-        dryrun = kwargs["dry"] or None
 
         try:
             eventbrite = TNAEventbrite(EVENTBRITE_PRIVATE_TOKEN)
@@ -44,7 +43,11 @@ class Command(BaseCommand):
         pagination = evs["pagination"]
 
         # Temporary code for testing
-        temp_truncate_events()
+        #exit(1)
+
+        # Get WhatsOn page
+        wop = get_whats_on_page()
+        temp_truncate_events(wop)
 
         # Now loop through the events
         while True:
@@ -55,12 +58,16 @@ class Command(BaseCommand):
                 #teams = eventbrite.get_teams(event["id"])
                 #questions = eventbrite.get_questions(event["id"])
 
+                #sc = eventbrite.get_structured_content(event["id"])
+                #print("Structured content")
+                #pprint.pprint(sc)
+
                 # Save required data in new dictionary
                 event_data = populate_event_data(event, desc)
 
-                if event.get('series_id', False):
-                    es = eventbrite.get_event_series(event['series_id'])
-                    print(f"Event Series: [{es.pretty}]")
+                #if event.get('series_id', False):
+                    #es = eventbrite.get_event_series(event['series_id'])
+                    #print(f"Event Series: [{es.pretty}]")
 
                 event_data["event_type"] = get_or_create_event_type(
                     event["format"]["short_name"], event["format"]["id"]
@@ -69,12 +76,12 @@ class Command(BaseCommand):
                 #event_data["team_data"] = populate_teams(teams)
                 #event_data["questions"] = populate_questions(questions)
 
-                if debug:
+                if debug == 2:
                     pprint.pprint(event_data)
                     print(f"Venue URL: {event_data['venue_website']}")
                     print(f"Event Type: {event['format']['short_name']}")
 
-                add_or_update_event_page(event_data)
+                add_or_update_event_page(event_data, wop)
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(
@@ -94,4 +101,4 @@ class Command(BaseCommand):
             else:
                 break
 
-        display_data()
+       # display_data()
