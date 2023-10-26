@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 organiser_id=EVENTBRITE_ORGANIZER_ID,
                 expand=EVENTBRITE_EVENTS_EXPANSION,
             )
-            if debug == 1:
+            if debug == 2:
                 print(evs.pretty)
         except:
             pass
@@ -47,7 +47,8 @@ class Command(BaseCommand):
 
         # Get WhatsOn page
         wop = get_whats_on_page()
-        temp_truncate_events(wop)
+        #display_data()
+        #temp_truncate_events(wop)
 
         # Now loop through the events
         while True:
@@ -101,4 +102,4 @@ class Command(BaseCommand):
             else:
                 break
 
-       # display_data()
+        #display_data()

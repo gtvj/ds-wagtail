@@ -5,7 +5,6 @@ import re
 
 import pprint as pp
 
-# Doesn't work yet!
 def get_prices_minmax(ticket_classes):
     mintp = 0.0
     maxtp = 0.0
@@ -34,12 +33,19 @@ def populate_event_data(event, event_description):
     event_data["lead_image"] = '' #CustomImage(title="Unknown")
     event_data["event_type"] = event["format"]["short_name"]
 
+    event_data['series_id'] = event.get('series_id')
+
     event_data["start_date"] = datetime.strptime(
-        event["start"]["local"], "%Y-%m-%dT%H:%M:%S"
-    )  #'2024-03-15T14:00:00'
+        event["start"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
+    )  #'2024-03-15T14:00:00Z'
+
+    event_data["start_date"] = datetime.fromisoformat(
+        event["start"]["utc"]
+    )
+    
     event_data["end_date"] = datetime.strptime(
-        event["end"]["local"], "%Y-%m-%dT%H:%M:%S"
-    )  #'2024-03-15T14:00:00'
+        event["end"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
+    )  #'2024-03-15T14:00:00Z'
     event_data["useful_info"] = ""
     event_data["target_audience"] = ""
 
@@ -126,7 +132,7 @@ def populate_questions(questions):
 def display_data():
     all_events = EventPage.objects.all().values()
 
-    print(f"All Events: {pp.pprint(all_events)}")
+    #print(f"All Events: {pp.pprint(all_events)}")
 
 
 def get_or_create_event_type(event_type, event_type_id):
@@ -174,15 +180,15 @@ def add_or_update_event_page(event, wop):
         intro="INTRO",
     )
 
+    series_id = event.get('series_id', -1)
+
+    print(f"Event: {event['eventbrite_id']} - Series id {series_id}: {event['start_date']} - {event['end_date']}")
     #wop.dump_bulk()
     wop.add_child(instance=ep)
     #ep.save()
 
 
 def temp_truncate_events(wop):
-    #EventType.objects.all().delete()
-    #EventPage.objects.all().delete()
-    #EventSession.objects.all().delete()
-    #for node in wop.Nodes:
-    #    node.Nodes.Clear
-    pass
+    children = wop.get_children()
+    for child in children:
+        child.delete()
