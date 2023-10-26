@@ -29,7 +29,6 @@ class VenueType(models.TextChoices):
     ONLINE = "online", _("Online")
     IN_PERSON = "in_person", _("In person")
     HYBRID = "hybrid", _("Hybrid")
-    TBA = "tba", _("TBA")
 
 
 @register_snippet
@@ -236,6 +235,20 @@ class EventSession(models.Model):
         related_name="sessions",
     )
 
+    """
+    Session ID will be used to hold the Eventbrite "event ID"
+    in Event Series pages, for each occurrence of the event.
+    For single events, it will be blank. We will also leave
+    it blank for editor created events, as we won't have an
+    Eventbrite event ID for these.
+    """
+    session_id = models.CharField(
+        verbose_name=_("session ID"),
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
     start = models.DateTimeField(
         verbose_name=_("starts at"),
     )
@@ -341,13 +354,6 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
     A page for an event.
     """
 
-    eventbrite_id = models.CharField(
-        max_length=15,
-        verbose_name=_("Eventbrite event id"),
-        null=False,
-        editable=True,
-    )
-
     # Content
     lead_image = models.ForeignKey(
         get_image_model_string(),
@@ -450,9 +456,15 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
         editable=False,
     )
 
-    series_id = models.CharField(
-        max_length=15,
-        verbose_name=_("Series ID"),
+    """
+    We will use this field to hold the event ID from Eventbrite,
+    or if it is the parent page of an Event Series, it will hold
+    the "series_id" from Eventbrite. For editor created events,
+    it will be blank.
+    """
+    eventbrite_id = models.CharField(
+        max_length=255,
+        verbose_name=_("eventbrite ID"),
         null=True,
         editable=False,
     )
@@ -472,7 +484,7 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
 
     # Promote tab
     short_title = models.CharField(
-        max_length=150,
+        max_length=50,
         verbose_name=_("short title"),
         blank=True,
         help_text=_(
