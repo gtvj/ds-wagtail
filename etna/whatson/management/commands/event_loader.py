@@ -1,13 +1,22 @@
 from django.core.management.base import BaseCommand
-import pprint
-from ...apiutils import *
-from ...tna_eventbrite import TNAEventbrite
+from django.conf import settings
+from etna.whatson.apiutils import *
+from etna.whatson.tna_eventbrite import TNAEventbrite
 
-EVENTBRITE_PRIVATE_TOKEN = "5NB2D6KB5WI7M4FGA7DW"
-EVENTBRITE_TNA_ORGANISATION_ID = "32190014757"
-EVENTBRITE_EVENTS_EXPANSION = "description,category,organizer,venue,format,ticket_classes,ticket_class_id,ticket_buyer_settings,event_series"
-EVENTBRITE_ORGANIZER_ID = "2226699547"
-EVENTBRITE_API_BASE_URL = "https://www.eventbriteapi.com/v3/"
+import os
+
+import pprint
+from eventbrite import Eventbrite
+
+#EVENTBRITE_PRIVATE_TOKEN = "5NB2D6KB5WI7M4FGA7DW"
+#EVENTBRITE_TNA_ORGANISATION_ID = "32190014757"
+
+EVENTBRITE_EVENTS_EXPANSION = "category,organizer,venue,format,ticket_classes,event_series"
+
+#EVENTBRITE_ORGANIZER_ID = os.getenv("EVENTBRITE_ORGANIZER_ID")
+#EVENTBRITE_API_BASE_URL = "https://www.eventbriteapi.com/v3/"
+#EVENTBRITE_PRIVATE_TOKEN = os.getenv("EVENTBRITE_PRIVATE_TOKEN")
+#EVENTBRITE_TNA_ORGANISATION_ID = os.getenv("EVENTBRITE_TNA_ORGANISATION_ID")
 
 # Extend the eventbrite SDK class as it has useful connectivity functionality but doesn't return the data in the format we require.
 
@@ -17,81 +26,64 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Named (optional) arguments
         parser.add_argument(
-            "--dry",
+            "--update",
             action="store_true",
-            help="Don't save to the database, just print data instead",
+            help="Update database. Default is to reset database.",
         )
 
     def handle(self, *args, **kwargs):
-        debug = 1
+        debug = True
+
+        eventbrite = TNAEventbrite(settings.EVENTBRITE_PRIVATE_TOKEN)
 
         try:
-            eventbrite = TNAEventbrite(EVENTBRITE_PRIVATE_TOKEN)
-
             evs = eventbrite.get_event_list(
-                organisation_id=EVENTBRITE_TNA_ORGANISATION_ID,
-                organiser_id=EVENTBRITE_ORGANIZER_ID,
+                organisation_id=settings.EVENTBRITE_TNA_ORGANISATION_ID,
+                organiser_id=settings.EVENTBRITE_ORGANIZER_ID,
                 expand=EVENTBRITE_EVENTS_EXPANSION,
             )
+
             if debug == 1:
                 print(evs.pretty)
         except:
-            pass
+            exit(1)
 
         # We are expecting a json response with two components: a pagination block and a list of events.
         eventlist = evs["events"]
         pagination = evs["pagination"]
 
-        # Temporary code for testing
-        #exit(1)
-
         # Get WhatsOn page
         wop = get_whats_on_page()
-        #display_data()
-        #temp_truncate_events(wop)
+
+        # Temporary test code
+        temp_truncate_events(wop)
 
         # Now loop through the events
         while True:
             for event in eventlist:
                 # For each event, get the following fields - these can't be obtained by using the expand feature unfortunately.
                 desc = eventbrite.get_description(event["id"])
-                #capacity = eventbrite.get_capacity_tier(event["id"])
-                #teams = eventbrite.get_teams(event["id"])
-                #questions = eventbrite.get_questions(event["id"])
-
-                #sc = eventbrite.get_structured_content(event["id"])
-                #print("Structured content")
-                #pprint.pprint(sc)
 
                 # Save required data in new dictionary
                 event_data = populate_event_data(event, desc)
 
-                #if event.get('series_id', False):
-                    #es = eventbrite.get_event_series(event['series_id'])
-                    #print(f"Event Series: [{es.pretty}]")
-
                 event_data["event_type"] = get_or_create_event_type(
                     event["format"]["short_name"], event["format"]["id"]
                 )
-                #event_data["capacity_data"] = populate_capacity_tier(capacity)
-                #event_data["team_data"] = populate_teams(teams)
-                #event_data["questions"] = populate_questions(questions)
 
-                if debug == 2:
+                if debug:
                     pprint.pprint(event_data)
-                    print(f"Venue URL: {event_data['venue_website']}")
-                    print(f"Event Type: {event['format']['short_name']}")
 
                 add_or_update_event_page(event_data, wop)
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(
-                    org_id=EVENTBRITE_TNA_ORGANISATION_ID,
+                    org_id=settings.EVENTBRITE_TNA_ORGANISATION_ID,
                     continuation=pagination["continuation"],
                     expand=EVENTBRITE_EVENTS_EXPANSION,
                 )
 
-                if debug == 2:
+                if debug:
                     print(evs.pretty)
 
                 eventlist = evs["events"]
@@ -102,4 +94,5 @@ class Command(BaseCommand):
             else:
                 break
 
-        display_data()
+        if debug:
+            display_data()

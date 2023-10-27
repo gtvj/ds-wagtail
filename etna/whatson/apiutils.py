@@ -132,10 +132,11 @@ def populate_questions(questions):
 
 
 def display_data():
-    #all_events = EventPage.objects.all().values()
+    all_events = EventPage.objects.all().values()
+    print(f"All Events: {pp.pprint(all_events)}")
 
-    #print(f"All Events: {pp.pprint(all_events)}")
-    pass
+    all_sessions = EventSession.objects.all().values()
+    print(f"All Sessions: {pp.pprint(all_sessions)}")
 
 
 def get_or_create_event_type(event_type, event_type_id):
