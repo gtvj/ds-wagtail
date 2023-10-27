@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 organiser_id=EVENTBRITE_ORGANIZER_ID,
                 expand=EVENTBRITE_EVENTS_EXPANSION,
             )
-            if debug == 2:
+            if debug == 1:
                 print(evs.pretty)
         except:
             pass
@@ -102,4 +102,4 @@ class Command(BaseCommand):
             else:
                 break
 
-        #display_data()
+        display_data()

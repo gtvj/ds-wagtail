@@ -30,6 +30,8 @@ def populate_event_data(event, event_description):
         pattern, " ", event_description.get("description")
     )
 
+    event_data["intro"] = event["description"]["text"] if event["description"]["text"] else "Blob"
+
     event_data["lead_image"] = '' #CustomImage(title="Unknown")
     event_data["event_type"] = event["format"]["short_name"]
 
@@ -65,7 +67,7 @@ def populate_event_data(event, event_description):
     else:
         if not event["online_event"]:
             # Assume that the event is TBA as there is no address and online event flag is False
-            event_data["venue_type"] = VenueType.TBA
+            event_data["venue_type"] = VenueType.UNKNOWN
         else:
             # Assume that the event is ONLINE as there is no address and online event flag is True
             event_data["venue_type"] = VenueType.ONLINE
@@ -88,9 +90,9 @@ def populate_event_data(event, event_description):
     event_data["eventbrite_id"] = event["id"]
     event_data["registration_info"] = "TBC"
     event_data["contact_info"] = "TBC"
-    event_data["short_title"] = event["name"]["text"]
+    event_data["short_title"] = event["name"]["text"][0:50]
 
-    pp.pprint(event_data)
+    #pp.pprint(event_data)
 
     return event_data
 
@@ -130,9 +132,10 @@ def populate_questions(questions):
 
 
 def display_data():
-    all_events = EventPage.objects.all().values()
+    #all_events = EventPage.objects.all().values()
 
     #print(f"All Events: {pp.pprint(all_events)}")
+    pass
 
 
 def get_or_create_event_type(event_type, event_type_id):
@@ -177,12 +180,12 @@ def add_or_update_event_page(event, wop):
         #lead_image=event["lead_image"],
         #slug=event["eventbrite_id"],
         teaser_text="TEASER",
-        intro="INTRO",
+        intro=event["intro"],
     )
 
     series_id = event.get('series_id', -1)
 
-    print(f"Event: {event['eventbrite_id']} - Series id {series_id}: {event['start_date']} - {event['end_date']}")
+    #print(f"Event: {event['eventbrite_id']} - Series id {series_id}: {event['start_date']} - {event['end_date']}")
     #wop.dump_bulk()
     wop.add_child(instance=ep)
     #ep.save()
