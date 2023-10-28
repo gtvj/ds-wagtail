@@ -6,17 +6,8 @@ from etna.whatson.tna_eventbrite import TNAEventbrite
 import os
 
 import pprint
-from eventbrite import Eventbrite
-
-#EVENTBRITE_PRIVATE_TOKEN = "5NB2D6KB5WI7M4FGA7DW"
-#EVENTBRITE_TNA_ORGANISATION_ID = "32190014757"
 
 EVENTBRITE_EVENTS_EXPANSION = "category,organizer,venue,format,ticket_classes,event_series"
-
-#EVENTBRITE_ORGANIZER_ID = os.getenv("EVENTBRITE_ORGANIZER_ID")
-#EVENTBRITE_API_BASE_URL = "https://www.eventbriteapi.com/v3/"
-#EVENTBRITE_PRIVATE_TOKEN = os.getenv("EVENTBRITE_PRIVATE_TOKEN")
-#EVENTBRITE_TNA_ORGANISATION_ID = os.getenv("EVENTBRITE_TNA_ORGANISATION_ID")
 
 # Extend the eventbrite SDK class as it has useful connectivity functionality but doesn't return the data in the format we require.
 
@@ -56,7 +47,7 @@ class Command(BaseCommand):
         wop = get_whats_on_page()
 
         # Temporary test code
-        temp_truncate_events(wop)
+        #temp_truncate_events(wop)
 
         # Now loop through the events
         while True:

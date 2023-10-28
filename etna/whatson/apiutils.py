@@ -148,6 +148,7 @@ def get_or_create_event_type(event_type, event_type_id):
 
     return obj
 
+
 def get_whats_on_page():
     return WhatsOnPage.objects.first()
 
