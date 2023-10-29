@@ -7,9 +7,12 @@ import os
 
 import pprint
 
-EVENTBRITE_EVENTS_EXPANSION = "category,organizer,venue,format,ticket_classes,event_series"
+EVENTBRITE_EVENTS_EXPANSION = (
+    "category,organizer,venue,format,ticket_classes,event_series"
+)
 
 # Extend the eventbrite SDK class as it has useful connectivity functionality but doesn't return the data in the format we require.
+
 
 class Command(BaseCommand):
     help = "Fetch data from Eventbrite TNA api and store in database"
@@ -46,9 +49,6 @@ class Command(BaseCommand):
         # Get WhatsOn page
         wop = get_whats_on_page()
 
-        # Temporary test code
-        #temp_truncate_events(wop)
-
         # Now loop through the events
         while True:
             for event in eventlist:
@@ -65,7 +65,8 @@ class Command(BaseCommand):
                 if debug:
                     pprint.pprint(event_data)
 
-                add_or_update_event_page(event_data, wop)
+                test_add_or_update_event_page(event_data, wop)
+                #process_event(event_data, wop)
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(

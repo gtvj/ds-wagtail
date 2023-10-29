@@ -5,6 +5,7 @@ import re
 
 import pprint as pp
 
+
 def get_prices_minmax(ticket_classes):
     mintp = 0.0
     maxtp = 0.0
@@ -26,25 +27,25 @@ def populate_event_data(event, event_description):
     event_data = {}
 
     # Remove html
-    event_data["description"] = re.sub(
+    event_data["full_description"] = re.sub(
         pattern, " ", event_description.get("description")
     )
 
-    event_data["intro"] = event["description"]["text"] if event["description"]["text"] else "Blob"
+    event_data["teaser_text"] = (
+        event["description"]["text"] if event["description"]["text"] else "Teaser ..."
+    )
 
-    event_data["lead_image"] = '' #CustomImage(title="Unknown")
+    event_data["lead_image"] = ""  # CustomImage(title="Unknown")
     event_data["event_type"] = event["format"]["short_name"]
 
-    event_data['series_id'] = event.get('series_id')
+    event_data["series_id"] = event.get("series_id")
 
     event_data["start_date"] = datetime.strptime(
         event["start"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
     )  #'2024-03-15T14:00:00Z'
 
-    event_data["start_date"] = datetime.fromisoformat(
-        event["start"]["utc"]
-    )
-    
+    event_data["start_date"] = datetime.fromisoformat(event["start"]["utc"])
+
     event_data["end_date"] = datetime.strptime(
         event["end"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
     )  #'2024-03-15T14:00:00Z'
@@ -92,7 +93,7 @@ def populate_event_data(event, event_description):
     event_data["contact_info"] = "TBC"
     event_data["short_title"] = event["name"]["text"][0:50]
 
-    #pp.pprint(event_data)
+    # pp.pprint(event_data)
 
     return event_data
 
@@ -153,12 +154,102 @@ def get_whats_on_page():
     return WhatsOnPage.objects.first()
 
 
-def add_or_update_event_page(event, wop):
+def process_event(event, wop):
+    ep = add_or_update_event_page(event, wop)
+    add_or_update_event_series(ep)
 
+
+def add_or_update_event_series(parent):
+    pass
+
+def test_add_or_update_event_page(event, root_page):
+
+    event_page, created = EventPage.objects.get_or_create(eventbrite_id=event['eventbrite_id'])
+
+    # Populate all mandatory fields from the API
+    event_page.description = event["full_description"]
+    event_page.useful_info = event["useful_info"]
+    event_page.target_audience = event["target_audience"]
+    event_page.venue_type = event["venue_type"]
+    event_page.venue_website = event["venue_website"]
+    event_page.venue_address = event["venue_address"]
+    event_page.venue_space_name = event["venue_space_name"]
+    event_page.video_conference_info = event["video_conference_info"]
+    event_page.registration_url = event["registration_url"]
+    event_page.min_price = event["min_price"]
+    event_page.max_price = event["max_price"]
+    event_page.registration_info = event["registration_info"]
+    event_page.contact_info = event["contact_info"]
+    event_page.short_title = event["short_title"]
+    event_page.event_type = event["event_type"]
+    event_page.title = event["short_title"]
+    event_page.intro = "Bindi Bhaji"
+    event_page.teaser_text = event["teaser_text"]
+
+    # Check if it's not already a child of the root page and update its fields
+    if not event_page.is_child_of(root_page):
+        # Add the EventPage as a child to the root page
+        root_page.add_child(instance=event_page)
+
+    # Save the changes
+    event_page.save()
+
+def add_or_update_event_page(event, wop):
+    # Given the eventbrite_id, looks to see if it already exists in the database - if it does, then look to update it
+    # NOTE: we don't want to override stuff that has been modified by content providers - fix?
+
+    # NOTE: we can't use the ORM update or create because we want treebeard to handle the create.
+
+    ep = EventPage.objects.get(eventbrite_id=event["eventbrite_id"])
+
+    if ep:
+        ep.description = event["full_description"]
+        ep.useful_info = event["useful_info"]
+        ep.target_audience = event["target_audience"]
+        ep.venue_type = event["venue_type"]
+        ep.venue_website = event["venue_website"]
+        ep.venue_address = event["venue_address"]
+        ep.venue_space_name = event["venue_space_name"]
+        ep.video_conference_info = event["video_conference_info"]
+        ep.registration_url = event["registration_url"]
+        ep.min_price = event["min_price"]
+        ep.max_price = event["max_price"]
+        ep.registration_info = event["registration_info"]
+        ep.contact_info = event["contact_info"]
+        ep.short_title = event["short_title"]
+        ep.event_type = event["event_type"]
+        ep.title = event["short_title"]
+        ep.intro = "Bindi Bhaji"
+        ep.teaser_text = event["teaser_text"]
+        # Update the page
+        ep.save(
+            update_fields=[
+                "description",
+                "useful_info",
+                "target_audience",
+                "venue_type",
+                "venue_website",
+                "venue_address",
+                "venue_space_name",
+                "video_conference_info",
+                "registration_url",
+                "min_price",
+                "max_price",
+                "registration_info",
+                "contact_info",
+                "short_title",
+                "event_type",
+                "title",
+                "intro",
+                "teaser_text",
+            ]
+        )
+
+        return ep
+
+    print(f"Object doesn't exist")
     ep = EventPage(
-        start_date=event["start_date"],
-        end_date=event["end_date"],
-        description=event["description"],
+        description=event["full_description"],
         useful_info=event["useful_info"],
         target_audience=event["target_audience"],
         venue_type=event["venue_type"],
@@ -173,27 +264,15 @@ def add_or_update_event_page(event, wop):
         registration_info=event["registration_info"],
         contact_info=event["contact_info"],
         short_title=event["short_title"],
-        # The following fields are Wagtail fields and have to be supplied - don't yet know
-        # how they will be handled
         event_type=event["event_type"],
-        #path="PATH" + event['eventbrite_id'],
         title=event["short_title"],
-        #depth=1,
-        #lead_image=event["lead_image"],
-        #slug=event["eventbrite_id"],
-        teaser_text="TEASER",
-        intro=event["intro"],
+        intro="Bindi Bhaji",
+        teaser_text=event["teaser_text"],
     )
 
-    series_id = event.get('series_id', -1)
+    series_id = event.get("series_id", None)
 
-    #print(f"Event: {event['eventbrite_id']} - Series id {series_id}: {event['start_date']} - {event['end_date']}")
-    #wop.dump_bulk()
+    # Otherwise add the child to the database
     wop.add_child(instance=ep)
-    #ep.save()
 
-
-def temp_truncate_events(wop):
-    children = wop.get_children()
-    for child in children:
-        child.delete()
+    return ep
