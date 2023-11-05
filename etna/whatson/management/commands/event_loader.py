@@ -65,8 +65,8 @@ class Command(BaseCommand):
                 if debug:
                     pprint.pprint(event_data)
 
-                test_add_or_update_event_page(event_data, wop)
-                #process_event(event_data, wop)
+                # add_or_update_event_page(event_data, wop)
+                process_event(event_data, wop)
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(
