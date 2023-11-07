@@ -53,8 +53,6 @@ def populate_event_data(event, event_description):
     event_data["end_date"] = datetime.strptime(
         event["end"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
     )  #'2024-03-15T14:00:00Z'
-    event_data["useful_info"] = ""
-    event_data["target_audience"] = ""
 
     if event["venue"]:  # value always there but may be None
         if not event["online_event"]:
@@ -64,7 +62,7 @@ def populate_event_data(event, event_description):
             # Assume that the event is HYBRID as there is an address and online event flag is True
             event_data["venue_type"] = VenueType.HYBRID
 
-        event_data["venue_website"] = event["organizer"]["website"]
+        #event_data["venue_website"] = event["organizer"]["website"]
         event_data["venue_address"] = event["venue"]["address"][
             "localized_address_display"
         ]
@@ -81,7 +79,6 @@ def populate_event_data(event, event_description):
         event_data["venue_address"] = ""
         event_data["venue_space_name"] = ""
 
-    event_data["video_conference_info"] = "TBC"
     event_data["registration_url"] = event["url"]
 
     if event.get("ticket_classes", False):  # value may not be in the dict
@@ -93,9 +90,6 @@ def populate_event_data(event, event_description):
         event_data["max_price"] = 0
 
     event_data["eventbrite_id"] = event["id"]
-    event_data["registration_info"] = "TBC"
-    event_data["contact_info"] = "TBC"
-    event_data["short_title"] = event["name"]["text"][0:50]
 
     # pp.pprint(event_data)
 
@@ -221,47 +215,47 @@ def add_or_update_event_page(event, wop):
         # Update the page
         ep.save(
             update_fields=[
-                "description",
-                "useful_info",
-                "target_audience",
+                #"description",
+                #"useful_info",
+                #"target_audience",
                 "venue_type",
-                "venue_website",
+                #"venue_website",
                 "venue_address",
                 "venue_space_name",
-                "video_conference_info",
+                #"video_conference_info",
                 "registration_url",
                 "min_price",
                 "max_price",
-                "registration_info",
-                "contact_info",
-                "short_title",
+                #"registration_info",
+                #"contact_info",
+                #"short_title",
                 "event_type",
-                "title",
-                "intro",
+                #"title",
+                #"intro",
                 "teaser_text",
             ]
         )
 
     except EventPage.DoesNotExist:
         ep = EventPage(
-            description=event["full_description"],
-            useful_info=event["useful_info"],
-            target_audience=event["target_audience"],
+            #description=event["full_description"],
+            #useful_info=event["useful_info"],
+            #target_audience=event["target_audience"],
             venue_type=event["venue_type"],
-            venue_website=event["venue_website"],
+            #venue_website=event["venue_website"],
             venue_address=event["venue_address"],
             venue_space_name=event["venue_space_name"],
-            video_conference_info=event["video_conference_info"],
+            #video_conference_info=event["video_conference_info"],
             registration_url=event["registration_url"],
             min_price=event["min_price"],
             max_price=event["max_price"],
             eventbrite_id=event["eventbrite_id"],
-            registration_info=event["registration_info"],
-            contact_info=event["contact_info"],
-            short_title=event["short_title"],
+            #registration_info=event["registration_info"],
+            #contact_info=event["contact_info"],
+            #short_title=event["short_title"],
             event_type=event["event_type"],
-            title=event["short_title"],
-            intro=event["short_description"],
+            #title=event["short_title"],
+            #intro=event["short_description"],
             teaser_text=event["teaser_text"],
         )
 

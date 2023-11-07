@@ -3,8 +3,6 @@ from django.conf import settings
 from etna.whatson.apiutils import *
 from etna.whatson.tna_eventbrite import TNAEventbrite
 
-import os
-
 import pprint
 
 EVENTBRITE_EVENTS_EXPANSION = (
