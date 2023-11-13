@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 expand=EVENTBRITE_EVENTS_EXPANSION,
             )
 
-            if debug == 1:
+            if debug:
                 print(evs.pretty)
         except:
             exit(1)
@@ -46,6 +46,9 @@ class Command(BaseCommand):
 
         # Get WhatsOn page
         wop = get_whats_on_page()
+
+        # Temporary
+        EventSession.objects.all().delete()
 
         # Now loop through the events
         while True:
@@ -63,7 +66,6 @@ class Command(BaseCommand):
                 if debug:
                     pprint.pprint(event_data)
 
-                # add_or_update_event_page(event_data, wop)
                 process_event(event_data, wop)
 
             if pagination["has_more_items"]:

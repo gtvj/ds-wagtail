@@ -223,52 +223,6 @@ class EventSpeaker(Orderable):
     ]
 
 
-class EventSession(models.Model):
-    """
-    This model is used to add sessions to an event
-    e.g. 28th September @ 9:00, 29th September @ 10:30, 30th September @ 12:00.
-    These will link to the Eventbrite page.
-    """
-
-    page = ParentalKey(
-        "wagtailcore.Page",
-        on_delete=models.CASCADE,
-        related_name="sessions",
-    )
-
-    """
-    Session ID will be used to hold the Eventbrite "event ID"
-    in Event Series pages, for each occurrence of the event.
-    For single events, it will be blank. We will also leave
-    it blank for editor created events, as we won't have an
-    Eventbrite event ID for these.
-    """
-    session_id = models.CharField(
-        verbose_name=_("session ID"),
-        null=True,
-        blank=True,
-        editable=False,
-    )
-
-    start = models.DateTimeField(
-        verbose_name=_("starts at"),
-    )
-
-    end = models.DateTimeField(
-        verbose_name=_("ends at"),
-    )
-
-    panels = [
-        FieldPanel("start"),
-        FieldPanel("end"),
-    ]
-
-    class Meta:
-        verbose_name = _("session")
-        verbose_name_plural = _("sessions")
-        ordering = ["start"]
-
-
 class WhatsOnPage(BasePageWithIntro):
     """WhatsOnPage
 
@@ -744,6 +698,52 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
     subpage_types = []
 
     base_form_class = EventPageForm
+
+
+class EventSession(models.Model):
+    """
+    This model is used to add sessions to an event
+    e.g. 28th September @ 9:00, 29th September @ 10:30, 30th September @ 12:00.
+    These will link to the Eventbrite page.
+    """
+
+    page = ParentalKey(
+        EventPage,
+        on_delete=models.CASCADE,
+        related_name="sessions",
+    )
+
+    """
+    Session ID will be used to hold the Eventbrite "event ID"
+    in Event Series pages, for each occurrence of the event.
+    For single events, it will be blank. We will also leave
+    it blank for editor created events, as we won't have an
+    Eventbrite event ID for these.
+    """
+    session_id = models.CharField(
+        verbose_name=_("session ID"),
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
+    start = models.DateTimeField(
+        verbose_name=_("starts at"),
+    )
+
+    end = models.DateTimeField(
+        verbose_name=_("ends at"),
+    )
+
+    panels = [
+        FieldPanel("start"),
+        FieldPanel("end"),
+    ]
+
+    class Meta:
+        verbose_name = _("session")
+        verbose_name_plural = _("sessions")
+        ordering = ["start"]
 
 
 class EventFilterForm(forms.Form):

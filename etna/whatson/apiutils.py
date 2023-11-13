@@ -62,7 +62,7 @@ def populate_event_data(event, event_description):
             # Assume that the event is HYBRID as there is an address and online event flag is True
             event_data["venue_type"] = VenueType.HYBRID
 
-        #event_data["venue_website"] = event["organizer"]["website"]
+        event_data["venue_website"] = event["organizer"]["website"]
         event_data["venue_address"] = event["venue"]["address"][
             "localized_address_display"
         ]
@@ -91,6 +91,13 @@ def populate_event_data(event, event_description):
 
     event_data["eventbrite_id"] = event["id"]
 
+    event_data["useful_info"] = ""
+    event_data["target_audience"] = ""
+    event_data["video_conference_info"] = "Unknown"
+    event_data["registration_info"] = ""
+    event_data["contact_info"] = ""
+
+    event_data["short_title"] = event["name"]["text"]
     # pp.pprint(event_data)
 
     return event_data
@@ -158,10 +165,20 @@ def process_event(event, wop):
 
 
 def add_or_update_event_series(event, event_page):
-    series_id = event.get("series_id", None)
+    event_id = event["eventbrite_id"]
+    series_id = event.get("series_id", event_id)
+
+    if 1:
+        # This event has just a single occurence
+        # The session id we use is the events own id, not the series id
+        pass
+    else:
+        # This event is part of a series
+        # The session id 
+        pass
 
     try:
-        es = EventSession.objects.get(session_id=series_id, eventbrite_id=event["eventbrite_id"])
+        es = EventSession.objects.get(session_id=series_id)
 
         # Potential update for this sessions id
         es.start = event["start_date"]
@@ -212,7 +229,7 @@ def add_or_update_event_page(event, wop):
         #ep.intro = event["short_description"] # Editor
         ep.teaser_text = event["teaser_text"] # Editor - but use a filler text as default
 
-        # Update the page
+        # Update the page, but only for fields that are not likely to be edited on Wagtail 
         ep.save(
             update_fields=[
                 #"description",
@@ -237,25 +254,26 @@ def add_or_update_event_page(event, wop):
         )
 
     except EventPage.DoesNotExist:
+        # Insert all available data
         ep = EventPage(
-            #description=event["full_description"],
-            #useful_info=event["useful_info"],
-            #target_audience=event["target_audience"],
+            description=event["full_description"],
+            useful_info=event["useful_info"],
+            target_audience=event["target_audience"],
             venue_type=event["venue_type"],
-            #venue_website=event["venue_website"],
+            venue_website=event["venue_website"],
             venue_address=event["venue_address"],
             venue_space_name=event["venue_space_name"],
-            #video_conference_info=event["video_conference_info"],
+            video_conference_info=event["video_conference_info"],
             registration_url=event["registration_url"],
             min_price=event["min_price"],
             max_price=event["max_price"],
             eventbrite_id=event["eventbrite_id"],
-            #registration_info=event["registration_info"],
-            #contact_info=event["contact_info"],
-            #short_title=event["short_title"],
+            registration_info=event["registration_info"],
+            contact_info=event["contact_info"],
+            short_title=event["short_title"][:50],
             event_type=event["event_type"],
-            #title=event["short_title"],
-            #intro=event["short_description"],
+            title=event["short_title"][:50],
+            intro=event["short_description"],
             teaser_text=event["teaser_text"],
         )
 
