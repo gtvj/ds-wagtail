@@ -24,7 +24,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
-        debug = True
+        debug = False
 
         eventbrite = TNAEventbrite(settings.EVENTBRITE_PRIVATE_TOKEN)
 
@@ -35,8 +35,7 @@ class Command(BaseCommand):
                 expand=EVENTBRITE_EVENTS_EXPANSION,
             )
 
-            if debug:
-                print(evs.pretty)
+            print(evs.pretty)
         except:
             exit(1)
 
@@ -46,10 +45,7 @@ class Command(BaseCommand):
 
         # Get WhatsOn page
         wop = get_whats_on_page()
-
-        # Temporary
-        EventSession.objects.all().delete()
-
+        
         # Now loop through the events
         while True:
             for event in eventlist:
@@ -70,8 +66,8 @@ class Command(BaseCommand):
 
             if pagination["has_more_items"]:
                 evs = eventbrite.get_event_list(
-                    org_id=settings.EVENTBRITE_TNA_ORGANISATION_ID,
-                    continuation=pagination["continuation"],
+                    organisation_id=settings.EVENTBRITE_TNA_ORGANISATION_ID,
+                    organiser_id=settings.EVENTBRITE_ORGANIZER_ID,
                     expand=EVENTBRITE_EVENTS_EXPANSION,
                 )
 

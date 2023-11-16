@@ -42,7 +42,18 @@ def populate_event_data(event, event_description):
     event_data["lead_image"] = ""  # CustomImage(title="Unknown")
     event_data["event_type"] = event["format"]["short_name"]
 
-    event_data["series_id"] = event.get("series_id")
+    """
+    If this event belongs to part of a series, the event['is_series'] will be set to True.
+    If this is the case (it is a series), we only save the basic data once with the series id
+    instead of the event id.
+
+    In a series, there may be multiple events and the only difference will be the start and end datetimes
+    and this is handled further on by the event session table
+    """
+
+    event_data["eventbrite_id"] = event["series_id"] if event["is_series"] else event["id"]
+    event_data["event_id"] = event["id"] # for the session occurences
+    event_data["is_series"] = event["is_series"]
 
     event_data["start_date"] = datetime.strptime(
         event["start"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
@@ -53,6 +64,8 @@ def populate_event_data(event, event_description):
     event_data["end_date"] = datetime.strptime(
         event["end"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
     )  #'2024-03-15T14:00:00Z'
+
+    event_data["end_date"] = datetime.fromisoformat(event["end"]["utc"])
 
     if event["venue"]:  # value always there but may be None
         if not event["online_event"]:
@@ -88,8 +101,6 @@ def populate_event_data(event, event_description):
     else:
         event_data["min_price"] = 0
         event_data["max_price"] = 0
-
-    event_data["eventbrite_id"] = event["id"]
 
     event_data["useful_info"] = ""
     event_data["target_audience"] = ""
@@ -165,20 +176,12 @@ def process_event(event, wop):
 
 
 def add_or_update_event_series(event, event_page):
-    event_id = event["eventbrite_id"]
-    series_id = event.get("series_id", event_id)
-
-    if 1:
-        # This event has just a single occurence
-        # The session id we use is the events own id, not the series id
-        pass
-    else:
-        # This event is part of a series
-        # The session id 
-        pass
+    session_id = event["eventbrite_id"]
+    event_id = event["event_id"] if event["is_series"] else None
 
     try:
-        es = EventSession.objects.get(session_id=series_id)
+        es = EventSession.objects.get(session_id=session_id, event_id=event_id)
+        print("Updating EventSession")
 
         # Potential update for this sessions id
         es.start = event["start_date"]
@@ -192,24 +195,27 @@ def add_or_update_event_series(event, event_page):
         )
 
     except EventSession.DoesNotExist:
-        es = EventSession(
-            session_id = series_id,
+        print("Inserting EventSession")
+
+        EventSession.objects.create(
+            page_id = event_page.pk,
+            session_id = session_id,
+            event_id  = event_id,
             start = event["start_date"],
             end = event["end_date"]
         )
 
-        event_page.add_child(instance=es)
-
-
 def add_or_update_event_page(event, wop):
     # Given the eventbrite_id, looks to see if it already exists in the database - if it does, then look to update it
-    # NOTE: we don't want to override stuff that has been modified by content providers - fix?
-
-    # NOTE: we can't use the ORM update or create because we want treebeard to handle the create.
+    # NOTE 1: we don't want to override stuff that has been modified by content providers - so we create with more data than 
+    # we update with.
+    # NOTE 2: the eventbrite_id is either the event id or the series id if present.
+    # NOTE 3: we can't use the ORM update or create because we want treebeard to handle the create.
 
     try:
         ep = EventPage.objects.get(eventbrite_id=event["eventbrite_id"])
 
+        print("Updating EventPage")
         #ep.description = event["full_description"] # Editor
         #ep.useful_info = event["useful_info"] # Editor
         #ep.target_audience = event["target_audience"] # Editor
@@ -255,6 +261,7 @@ def add_or_update_event_page(event, wop):
 
     except EventPage.DoesNotExist:
         # Insert all available data
+        print("Inserting EventPage")
         ep = EventPage(
             description=event["full_description"],
             useful_info=event["useful_info"],

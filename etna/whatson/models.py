@@ -750,7 +750,7 @@ class EventPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
     base_form_class = EventPageForm
 
 
-class EventSession(models.Model):
+class EventSession(Orderable):
     """
     This model is used to add sessions to an event
     e.g. 28th September @ 9:00, 29th September @ 10:30, 30th September @ 12:00.
@@ -772,6 +772,13 @@ class EventSession(models.Model):
     """
     session_id = models.CharField(
         verbose_name=_("session ID"),
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
+    event_id = models.CharField(
+        verbose_name=_("event ID"),
         null=True,
         blank=True,
         editable=False,
