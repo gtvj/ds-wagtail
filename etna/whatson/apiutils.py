@@ -3,9 +3,6 @@ from datetime import datetime
 from etna.images.models import CustomImage
 import re
 
-import pprint as pp
-
-
 def get_prices_minmax(ticket_classes):
     mintp = 0.0
     maxtp = 0.0
@@ -21,14 +18,14 @@ def get_prices_minmax(ticket_classes):
 
     return mintp, maxtp
 
-
 def populate_event_data(event, event_description):
-    pattern = re.compile("<.*?>")
+    html_pattern = re.compile("<.*?>")
     event_data = {}
 
-    # Remove html
+    # Remove html - this will need tweaking in WhatsOn part 2, as it removes href markers that may be of interest
+    # It also can result in double spaces.
     event_data["full_description"] = re.sub(
-        pattern, " ", event_description.get("description")
+        html_pattern, " ", event_description.get("description")
     )
 
     event_data["teaser_text"] = (
@@ -109,52 +106,8 @@ def populate_event_data(event, event_description):
     event_data["contact_info"] = ""
 
     event_data["short_title"] = event["name"]["text"]
-    # pp.pprint(event_data)
 
     return event_data
-
-
-def populate_capacity_tier(capacity):
-    capacity_data = {}
-
-    if capacity:
-        capacity_data["total"] = capacity["capacity_total"]
-        capacity_data["sold"] = capacity["capacity_sold"]
-        capacity_data["pending"] = capacity["capacity_pending"]
-
-    return capacity_data
-
-
-def populate_teams(teams):
-    team_data = {}
-
-    if teams:
-        for t in teams["teams"]:
-            print(f"Teams is {t}")
-            # team_data['name'] = teams.teams[0]['name']
-
-    return team_data
-
-
-def populate_questions(questions):
-    question_data = {}
-
-    if questions:
-        print(f"Questions: {questions}")
-        # for q in questions:
-        #    print(f"Question: {q[0]}")
-        # team_data['name'] = teams.teams[0]['name']
-
-    return question_data
-
-
-def display_data():
-    all_events = EventPage.objects.all().values()
-    print(f"All Events: {pp.pprint(all_events)}")
-
-    all_sessions = EventSession.objects.all().values()
-    print(f"All Sessions: {pp.pprint(all_sessions)}")
-
 
 def get_or_create_event_type(event_type, event_type_id):
     try:
@@ -165,15 +118,12 @@ def get_or_create_event_type(event_type, event_type_id):
 
     return obj
 
-
 def get_whats_on_page():
     return WhatsOnPage.objects.first()
-
 
 def process_event(event, wop):
     event_page = add_or_update_event_page(event, wop)
     add_or_update_event_series(event, event_page)
-
 
 def add_or_update_event_series(event, event_page):
     session_id = event["eventbrite_id"]
@@ -181,7 +131,6 @@ def add_or_update_event_series(event, event_page):
 
     try:
         es = EventSession.objects.get(session_id=session_id, event_id=event_id)
-        print("Updating EventSession")
 
         # Potential update for this sessions id
         es.start = event["start_date"]
@@ -195,8 +144,6 @@ def add_or_update_event_series(event, event_page):
         )
 
     except EventSession.DoesNotExist:
-        print("Inserting EventSession")
-
         EventSession.objects.create(
             page_id = event_page.pk,
             session_id = session_id,
@@ -215,53 +162,32 @@ def add_or_update_event_page(event, wop):
     try:
         ep = EventPage.objects.get(eventbrite_id=event["eventbrite_id"])
 
-        print("Updating EventPage")
-        #ep.description = event["full_description"] # Editor
-        #ep.useful_info = event["useful_info"] # Editor
-        #ep.target_audience = event["target_audience"] # Editor
         ep.venue_type = event["venue_type"]
-        #ep.venue_website = event["venue_website"] # Editor
         ep.venue_address = event["venue_address"]
         ep.venue_space_name = event["venue_space_name"]
-        #ep.video_conference_info = event["video_conference_info"] # Editor
         ep.registration_url = event["registration_url"]
         ep.min_price = event["min_price"]
         ep.max_price = event["max_price"]
-        #ep.registration_info = event["registration_info"] # Editor
-        #ep.contact_info = event["contact_info"] # Editor
-        #ep.short_title = event["short_title"]  # Editor
         ep.event_type = event["event_type"]
-        #ep.title = event["short_title"] # Editor
-        #ep.intro = event["short_description"] # Editor
         ep.teaser_text = event["teaser_text"] # Editor - but use a filler text as default
 
         # Update the page, but only for fields that are not likely to be edited on Wagtail 
         ep.save(
             update_fields=[
-                #"description",
-                #"useful_info",
-                #"target_audience",
                 "venue_type",
-                #"venue_website",
                 "venue_address",
                 "venue_space_name",
-                #"video_conference_info",
                 "registration_url",
                 "min_price",
                 "max_price",
-                #"registration_info",
-                #"contact_info",
-                #"short_title",
                 "event_type",
-                #"title",
-                #"intro",
                 "teaser_text",
             ]
         )
 
     except EventPage.DoesNotExist:
         # Insert all available data
-        print("Inserting EventPage")
+
         ep = EventPage(
             description=event["full_description"],
             useful_info=event["useful_info"],
@@ -284,7 +210,5 @@ def add_or_update_event_page(event, wop):
             teaser_text=event["teaser_text"],
         )
 
-        # Otherwise add the child to the database
+        # Add the child to the database
         wop.add_child(instance=ep)
-
-    return ep
