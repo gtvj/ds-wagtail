@@ -28,9 +28,7 @@ def populate_event_data(event, event_description):
         html_pattern, " ", event_description.get("description")
     )
 
-    event_data["teaser_text"] = (
-        event["description"]["text"] if event["description"]["text"] else "Teaser ..."
-    )
+    event_data["teaser_text"] = event["summary"]
 
     event_data["short_description"] = (
         event["description"]["text"] if event["description"]["text"] else "Intro text ..."

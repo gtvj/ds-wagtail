@@ -54,15 +54,19 @@ class TestWhatsOnPageEventFiltering(TestCase):
             min_price=0,
             max_price=0,
             start_date=timezone.make_aware(datetime(2023, 10, 17)),
-            sessions=[
-                EventSession(
-                    page=cls.whats_on_page,
-                    start=timezone.make_aware(datetime(2023, 10, 15)),
-                    end=timezone.make_aware(datetime(2023, 10, 16)),
-                )
-            ],
         )
+
+        cls.featured_event.sessions=[
+            EventSession(
+                page=cls.featured_event,
+                start=timezone.make_aware(datetime(2023, 10, 15)),
+                end=timezone.make_aware(datetime(2023, 10, 16)),
+            )
+        ]
+
         cls.whats_on_page.featured_event = cls.featured_event
+        cls.featured_event.save()
+
 
         cls.event_page_2 = EventPageFactory(
             title="Event page 2",
@@ -73,14 +77,17 @@ class TestWhatsOnPageEventFiltering(TestCase):
             min_price=0,
             max_price=15,
             start_date=timezone.make_aware(datetime(2023, 10, 17)),
-            sessions=[
-                EventSession(
-                    page=cls.whats_on_page,
-                    start=timezone.make_aware(datetime(2023, 10, 17)),
-                    end=timezone.make_aware(datetime(2023, 10, 18)),
-                )
-            ],
         )
+
+        cls.event_page_2.sessions=[
+            EventSession(
+                page=cls.event_page_2,
+                start=timezone.make_aware(datetime(2023, 10, 17)),
+                end=timezone.make_aware(datetime(2023, 10, 18)),
+            )
+        ]
+
+        cls.event_page_2.save()
 
         cls.event_page_3 = EventPageFactory(
             title="Event page 3",
@@ -90,14 +97,17 @@ class TestWhatsOnPageEventFiltering(TestCase):
             min_price=15,
             max_price=30,
             start_date=timezone.make_aware(datetime(2023, 10, 20)),
-            sessions=[
-                EventSession(
-                    page=cls.whats_on_page,
-                    start=timezone.make_aware(datetime(2023, 10, 20)),
-                    end=timezone.make_aware(datetime(2023, 10, 21)),
-                )
-            ],
         )
+
+        cls.event_page_3.sessions=[
+            EventSession(
+                page=cls.event_page_3,
+                start=timezone.make_aware(datetime(2023, 10, 20)),
+                end=timezone.make_aware(datetime(2023, 10, 21)),
+            )
+        ]
+        
+        cls.event_page_3.save()
 
         cls.event_page_4 = EventPageFactory(
             title="Event page 4",
@@ -107,14 +117,17 @@ class TestWhatsOnPageEventFiltering(TestCase):
             min_price=15,
             max_price=30,
             start_date=timezone.make_aware(datetime(2023, 10, 20)),
-            sessions=[
-                EventSession(
-                    page=cls.whats_on_page,
-                    start=timezone.make_aware(datetime(2023, 10, 20, 10, 30)),
-                    end=timezone.make_aware(datetime(2023, 10, 20, 20, 30)),
-                )
-            ],
         )
+
+        cls.event_page_4.sessions=[
+            EventSession(
+                page=cls.event_page_4,
+                start=timezone.make_aware(datetime(2023, 10, 20, 10, 30)),
+                end=timezone.make_aware(datetime(2023, 10, 20, 20, 30)),
+            )
+        ]
+        
+        cls.event_page_4.save()
 
         cls.event_page_5 = EventPageFactory(
             title="Event page 5",
@@ -124,14 +137,17 @@ class TestWhatsOnPageEventFiltering(TestCase):
             min_price=15,
             max_price=30,
             start_date=timezone.make_aware(datetime(2023, 10, 22)),
-            sessions=[
+        )
+
+        cls.event_page_5.sessions=[
                 EventSession(
-                    page=cls.whats_on_page,
+                    page=cls.event_page_5,
                     start=timezone.make_aware(datetime(2023, 10, 22, 10, 30)),
                     end=timezone.make_aware(datetime(2023, 10, 22, 10, 30)),
                 )
-            ],
-        )
+            ]
+
+        cls.event_page_5.save()
 
         cls.event_page_6 = EventPageFactory(
             title="Event page 6",
@@ -141,19 +157,22 @@ class TestWhatsOnPageEventFiltering(TestCase):
             min_price=15,
             max_price=30,
             start_date=timezone.make_aware(datetime(2023, 10, 22)),
-            sessions=[
-                EventSession(
-                    page=cls.whats_on_page,
-                    start=timezone.make_aware(datetime(2023, 10, 22, 10, 30)),
-                    end=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
-                ),
-                EventSession(
-                    page=cls.whats_on_page,
-                    start=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
-                    end=timezone.make_aware(datetime(2023, 10, 22, 12, 30)),
-                ),
-            ],
         )
+
+        cls.event_page_6.sessions=[
+            EventSession(
+                page=cls.event_page_6,
+                start=timezone.make_aware(datetime(2023, 10, 22, 10, 30)),
+                end=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
+            ),
+            EventSession(
+                page=cls.event_page_6,
+                start=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
+                end=timezone.make_aware(datetime(2023, 10, 22, 12, 30)),
+            ),
+        ]
+
+        cls.event_page_6.save()
 
     def test_get_event_pages(self):
         self.assertQuerySetEqual(
