@@ -1,7 +1,6 @@
 from .models import EventType, EventPage, EventSession, VenueType, WhatsOnPage
 from datetime import datetime
 from etna.images.models import CustomImage
-import re
 
 def get_prices_minmax(ticket_classes):
     mintp = 0.0
@@ -19,14 +18,11 @@ def get_prices_minmax(ticket_classes):
     return mintp, maxtp
 
 def populate_event_data(event, event_description):
-    html_pattern = re.compile("<.*?>")
     event_data = {}
 
     # Remove html - this will need tweaking in WhatsOn part 2, as it removes href markers that may be of interest
     # It also can result in double spaces.
-    event_data["full_description"] = re.sub(
-        html_pattern, " ", event_description.get("description")
-    )
+    event_data["full_description"] = event_description.get("description")
 
     event_data["teaser_text"] = event["summary"]
 
@@ -76,12 +72,9 @@ def populate_event_data(event, event_description):
         ]
         event_data["venue_space_name"] = event["venue"]["name"]
     else:
-        if not event["online_event"]:
-            # Assume that the event is TBA as there is no address and online event flag is False
-            event_data["venue_type"] = VenueType.UNKNOWN
-        else:
-            # Assume that the event is ONLINE as there is no address and online event flag is True
-            event_data["venue_type"] = VenueType.ONLINE
+        
+        # Assume that the event is ONLINE as there is no address and online event flag is True
+        event_data["venue_type"] = VenueType.ONLINE
 
         event_data["venue_website"] = ""
         event_data["venue_address"] = ""
@@ -210,3 +203,5 @@ def add_or_update_event_page(event, wop):
 
         # Add the child to the database
         wop.add_child(instance=ep)
+
+    return ep

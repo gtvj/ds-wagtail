@@ -35,8 +35,6 @@ class VenueType(models.TextChoices):
     ONLINE = "online", _("Online")
     IN_PERSON = "in_person", _("In person")
     HYBRID = "hybrid", _("Hybrid")
-    UNKNOWN = "unknown", _("Unknown")
-
 
 @register_snippet
 class EventType(models.Model):
