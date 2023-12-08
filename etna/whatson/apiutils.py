@@ -30,7 +30,7 @@ def populate_event_data(event, event_description):
         event["description"]["text"] if event["description"]["text"] else "Intro text ..."
     )
 
-    event_data["lead_image"] = ""  # CustomImage(title="Unknown")
+    event_data["lead_image"] = ""
     event_data["event_type"] = event["format"]["short_name"]
 
     """
@@ -45,6 +45,7 @@ def populate_event_data(event, event_description):
     event_data["eventbrite_id"] = event["series_id"] if event["is_series"] else event["id"]
     event_data["event_id"] = event["id"] # for the session occurences
     event_data["is_series"] = event["is_series"]
+    event_data["need_to_know_button_text"] = ""
 
     event_data["start_date"] = datetime.strptime(
         event["start"]["utc"], "%Y-%m-%dT%H:%M:%SZ"
@@ -92,7 +93,12 @@ def populate_event_data(event, event_description):
 
     event_data["useful_info"] = ""
     event_data["target_audience"] = ""
-    event_data["video_conference_info"] = "Unknown"
+
+    if  event["online_event"]:
+        event_data["video_conference_info"] = "TBC"
+    else:
+        event_data["video_conference_info"] = ""
+        
     event_data["registration_info"] = ""
     event_data["contact_info"] = ""
 
@@ -115,6 +121,9 @@ def get_whats_on_page():
 def process_event(event, wop):
     event_page = add_or_update_event_page(event, wop)
     add_or_update_event_series(event, event_page)
+
+    # Run the save method on the event_page because event sessions provide the event page minimum and maximum dates.
+    event_page.save()
 
 def add_or_update_event_series(event, event_page):
     session_id = event["eventbrite_id"]
@@ -144,11 +153,13 @@ def add_or_update_event_series(event, event_page):
         )
 
 def add_or_update_event_page(event, wop):
-    # Given the eventbrite_id, looks to see if it already exists in the database - if it does, then look to update it
-    # NOTE 1: we don't want to override stuff that has been modified by content providers - so we create with more data than 
-    # we update with.
-    # NOTE 2: the eventbrite_id is either the event id or the series id if present.
-    # NOTE 3: we can't use the ORM update or create because we want treebeard to handle the create.
+    """
+        Given the eventbrite_id, looks to see if it already exists in the database - if it does, then look to update it
+        NOTE 1: we don't want to override stuff that has been modified by content providers - so we create with more data than 
+        we update with.
+        NOTE 2: the eventbrite_id is either the event id or the series id if present.
+        NOTE 3: we can't use the ORM update or create because we want treebeard to handle the create.
+    """
 
     try:
         ep = EventPage.objects.get(eventbrite_id=event["eventbrite_id"])
