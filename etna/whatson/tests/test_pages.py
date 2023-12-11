@@ -14,7 +14,7 @@ from ..models import AudienceType, EventAudienceType, EventSession, EventType
 class TestWhatsOnPageEventFiltering(TestCase):
     def setUp(self):
         super().setUp()
-        self.factory = RequestFactory()
+        self.factory = RequestFactory() 
 
     @classmethod
     def setUpTestData(cls):
@@ -162,13 +162,13 @@ class TestWhatsOnPageEventFiltering(TestCase):
         cls.event_page_6.sessions=[
             EventSession(
                 page=cls.event_page_6,
-                start=timezone.make_aware(datetime(2023, 10, 22, 10, 30)),
-                end=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
+                start=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
+                end=timezone.make_aware(datetime(2023, 10, 22, 12, 30)),
             ),
             EventSession(
                 page=cls.event_page_6,
-                start=timezone.make_aware(datetime(2023, 10, 22, 11, 30)),
-                end=timezone.make_aware(datetime(2023, 10, 22, 12, 30)),
+                start=timezone.make_aware(datetime(2023, 10, 22, 12, 30)),
+                end=timezone.make_aware(datetime(2023, 10, 22, 13, 30)),
             ),
         ]
 
