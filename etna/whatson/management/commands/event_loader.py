@@ -4,8 +4,6 @@ from etna.whatson.apiutils import *
 from etna.whatson.tna_eventbrite import TNAEventbrite
 import logging
 
-import pprint
-
 EVENTBRITE_EVENTS_EXPANSION = (
     "category,organizer,venue,format,ticket_classes,event_series"
 )

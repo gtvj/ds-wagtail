@@ -1,6 +1,5 @@
 from .models import EventType, EventPage, EventSession, VenueType, WhatsOnPage
 from datetime import datetime
-from etna.images.models import CustomImage
 
 def get_prices_minmax(ticket_classes):
     mintp = 0.0

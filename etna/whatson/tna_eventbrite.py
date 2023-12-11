@@ -12,7 +12,6 @@ class TNAEventbrite(Eventbrite):
         super().__init__(authkey)
 
     def get_event_list(self, organisation_id, organiser_id, continuation=None, **data):
-        print("In get_event_list - I shouldn't be here")
         if continuation:
             return self.get(
                 f"/organizations/{organisation_id}/events/?page_size={EVENTBRITE_PAGE_SIZE}&time_filter=current_future&order_by=start_desc&status={EVENTBRITE_EVENT_STATUS}&organizer_filter={organiser_id}&continuation={continuation}",
