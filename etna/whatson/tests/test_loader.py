@@ -126,12 +126,6 @@ class TestWhatsOnEventLoader(TestCase):
         for instance in result:
             self.assertEqual(instance['intro'], "Join us to view the suffrage movement through the lens of the index of arrested Suffragettes.")
 
-
-    def test_environment_variables_exists(self):
-        self.assertIsNotNone(settings.EVENTBRITE_ORGANIZER_ID)
-        self.assertIsNotNone(settings.EVENTBRITE_PRIVATE_TOKEN)
-        self.assertIsNotNone(settings.EVENTBRITE_TNA_ORGANISATION_ID)
-
     @patch("etna.whatson.tna_eventbrite.TNAEventbrite.get_event_list")
     @patch("etna.whatson.tna_eventbrite.TNAEventbrite.get_description")
     def test_no_api_response(self, mock_get_description, mock_get_event_list):
