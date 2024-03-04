@@ -245,13 +245,11 @@ class WhatsOnPage(BasePageWithIntro):
         [("promoted_links", WhatsOnPromotedLinksBlock())],
         blank=True,
         max_num=1,
-        use_json_field=True,
     )
     large_card_links = StreamField(
         [("large_card_links", LargeCardLinksBlock())],
         blank=True,
         max_num=1,
-        use_json_field=True,
     )
 
     def serve(self, request):
@@ -1078,7 +1076,6 @@ class ExhibitionPage(ArticleTagMixin, TopicalPageMixin, BasePageWithIntro):
         [("relatedarticles", RelatedArticlesBlock())],
         blank=True,
         null=True,
-        use_json_field=True,
     )
 
     # Promote tab
