@@ -335,11 +335,13 @@ class Record(DataLayerMixin, APIModel):
 
     @cached_property
     def hierarchy(self) -> Tuple["Record"]:
-        return tuple(
-            Record(item)
-            for item in self.get("@hierarchy.0", default=())
-            if item.get("identifier")
-        )
+        id_list = []
+        for item in self.template.get("@hierarchy", ()):
+            item_admin = item.get("@admin")
+            if item_admin.get("id"):
+                id_list.append(Record(item_admin))
+
+        return tuple(id_list)
 
     @cached_property
     def next_record(self) -> Union["Record", None]:
@@ -939,12 +941,35 @@ class Record(DataLayerMixin, APIModel):
 
     @cached_property
     def separated_materials(self) -> Dict[str, Any]:
+        """
+        Separated materials can be a list of dictionaries or a single dictionary
+        in the API response. This method essentially returns a list of dictionaries
+        that have had the links transformed into a more usable format.
+        """
         if value := self.template.get("separatedMaterials", {}):
-            value = dict(
-                description=value.get("description", ""),
-                links=list(format_link(val) for val in value.get("links", ())),
-            )
-            return value
+            materials = []
+            if isinstance(value, dict):
+                materials.append(
+                    {
+                        "description": value.get("description", ""),
+                        "links": (
+                            [format_link(link) for link in value.get("links")]
+                            if value.get("links", [])
+                            else []
+                        ),
+                    }
+                )
+            else:
+                for item in value:
+                    materials.append(
+                        {
+                            "description": item.get("description", ""),
+                            "links": [
+                                format_link(link) for link in item.get("links", [])
+                            ],
+                        }
+                    )
+            return materials
 
     @cached_property
     def unpublished_finding_aids(self) -> str:
