@@ -39,6 +39,7 @@ from etna.core.models import (
 from etna.core.serializers import RichTextSerializer
 from etna.core.utils import skos_id_from_text
 from etna.records.fields import RecordField
+from etna.records.serializers import RecordSerializer
 
 from .blocks import (
     ArticlePageStreamBlock,
@@ -674,7 +675,7 @@ class RecordArticlePage(
             APIField("type_label"),
             APIField("date_text"),
             APIField("about", serializer=RichTextSerializer()),
-            APIField("record"),
+            APIField("record", serializer=RecordSerializer()),
             APIField("gallery_heading"),
             APIField("image_library_link"),
             APIField("featured_article"),
