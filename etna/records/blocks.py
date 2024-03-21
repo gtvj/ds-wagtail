@@ -54,8 +54,11 @@ class RecordChooserBlock(blocks.ChooserBlock):
         from .widgets import RecordChooser
 
         return RecordChooser()
-    
+
     def get_api_representation(self, value, context=None):
+        """
+        Return useful data for the front-end via the Wagtail API.
+        """
         return {
             "iaid": value.iaid,
             "url": value.get_url(use_reference_number=False),
