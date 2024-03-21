@@ -54,6 +54,13 @@ class RecordChooserBlock(blocks.ChooserBlock):
         from .widgets import RecordChooser
 
         return RecordChooser()
+    
+    def get_api_representation(self, value, context=None):
+        return {
+            "iaid": value.iaid,
+            "url": value.get_url(use_reference_number=False),
+            "reference_number": value.reference_number,
+        }
 
     def get_prep_value(self, value):
         """Convert Record to IAID for persistance"""
