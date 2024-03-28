@@ -90,7 +90,7 @@ class Record(DataLayerMixin, APIModel):
         try:
             candidate = self.template["iaid"]
         except KeyError:
-            candidate = self.get("id", default="")
+            candidate = self.get("@admin.id", default="")
 
         try:
             # fallback for Record Creators
