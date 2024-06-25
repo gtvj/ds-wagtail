@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import HttpRequest
 from django.utils.functional import cached_property
@@ -28,7 +29,7 @@ class AuthorIndexPage(BasePage):
     author pages from the list.
     """
 
-    subpage_types = ["authors.AuthorPage"]
+    subpage_types = ["authors.PersonPage"]
 
     parent_page_types = ["home.HomePage"]
 
@@ -39,19 +40,44 @@ class AuthorIndexPage(BasePage):
     @cached_property
     def author_pages(self):
         """Return a sample of child pages for rendering in teaser."""
-        return self.get_children().type(AuthorPage).order_by("title").live().specific()
+        return PersonPage.objects.all().live().specific().exclude(author_summary="").exclude(author_summary=None).order_by("title")
+    
+    
+class ResearcherIndexPage(BasePage):
+    """Author index page
+
+    This is the parent page for all authors. It is used to
+    display a list of authors, and to link to individual
+    author pages from the list.
+    """
+
+    subpage_types = ["authors.PersonPage"]
+
+    parent_page_types = ["home.HomePage"]
+
+    api_fields = BasePage.api_fields + [
+        APIField("researcher_pages", serializer=DefaultPageSerializer(many=True))
+    ]
+
+    @cached_property
+    def researcher_pages(self):
+        """Return a sample of child pages for rendering in teaser."""
+        return PersonPage.objects.all().live().specific().exclude(research_summary="").exclude(research_summary=None).order_by("title")
 
 
-class AuthorPage(BasePage):
-    """Author page
+class PersonPage(BasePage):
+    """Person page
 
-    This page is to be used for an author profile page, where
-    we can put info about the author, an image, and then use it
-    to link pages to an author.
+    This page is to be used for an Person profile page, where
+    we can put info about the Person, an image, and then use it
+    to link pages to an Person.
     """
 
     role = models.CharField(blank=True, null=True, max_length=100)
-    summary = RichTextField(
+    author_summary = RichTextField(
+        blank=True, null=True, features=settings.RESTRICTED_RICH_TEXT_FEATURES
+    )
+    research_summary = RichTextField(
         blank=True, null=True, features=settings.RESTRICTED_RICH_TEXT_FEATURES
     )
     image = models.ForeignKey(
@@ -65,16 +91,17 @@ class AuthorPage(BasePage):
     content_panels = BasePage.content_panels + [
         FieldPanel("image"),
         FieldPanel("role"),
-        FieldPanel("summary"),
+        FieldPanel("author_summary"),
+        FieldPanel("research_summary"),
     ]
 
     class Meta:
-        verbose_name = "Author page"
-        verbose_name_plural = "Author pages"
-        verbose_name_public = "author"
+        verbose_name = "Person page"
+        verbose_name_plural = "Person pages"
+        verbose_name_public = "person"
 
     # DataLayerMixin overrides
-    gtm_content_group = "Author page"
+    gtm_content_group = "Person page"
 
     parent_page_types = ["authors.AuthorIndexPage"]
     subpage_types = []
@@ -90,7 +117,8 @@ class AuthorPage(BasePage):
 
     api_fields = BasePage.api_fields + [
         APIField("role"),
-        APIField("summary", serializer=RichTextSerializer()),
+        APIField("author_summary", serializer=RichTextSerializer()),
+        APIField("research_summary", serializer=RichTextSerializer()),
         APIField(
             "authored_focused_articles",
             serializer=DefaultPageSerializer(
@@ -131,7 +159,7 @@ class AuthorPage(BasePage):
 
     def get_datalayer_data(self, request: HttpRequest) -> Dict[str, Any]:
         data = super().get_datalayer_data(request)
-        data.update(customDimension3="Author page")
+        data.update(customDimension3="Person page")
         return data
 
 
@@ -145,11 +173,23 @@ class AuthorTag(models.Model):
 
     page = ParentalKey(Page, on_delete=models.CASCADE, related_name="author_tags")
     author = models.ForeignKey(
-        AuthorPage,
+        PersonPage,
         verbose_name="author",
         related_name="author_pages",
         on_delete=models.CASCADE,
     )
+
+    def clean(self):
+        super().clean()
+        if author := self.author:
+            if author.author_summary == "":
+                raise ValidationError(
+                    {
+                        "author": [
+                            "An author summary is required for use as an author."
+                        ]
+                    }
+                )
 
 
 class AuthorPageMixin:

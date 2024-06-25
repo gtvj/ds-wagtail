@@ -30,12 +30,22 @@
             </div>
         </header>
         <hr>
+        {% if page.author_summary %}
         <section class="tna-container tna-container--centred tna-section tna-!--margin-bottom-m">
             <div class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny">
                 <h2 class="tna-heading-l">About the author</h2>
-                {{ page.summary | richtext }}
+                {{ page.author_summary | richtext }}
             </div>
         </section>
+        {% endif %}
+        {% if page.research_summary %}
+        <section class="tna-container tna-container--centred tna-section tna-!--margin-bottom-m">
+            <div class="tna-column tna-column--width-2-3 tna-column--full-small tna-column--full-tiny">
+                <h2 class="tna-heading-l">About the researcher</h2>
+                {{ page.research_summary | richtext }}
+            </div>
+        </section>
+        {% endif %}
         {% if page.authored_focused_articles %}
         <aside class="tna-background--accent-light tna-!--margin-bottom-l tna-section">
             <div class="tna-container">
