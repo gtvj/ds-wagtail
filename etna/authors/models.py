@@ -20,6 +20,28 @@ from etna.core.serializers import (
     RichTextSerializer,
 )
 
+class PeopleIndexPage(BasePage):
+    """People index page
+    """
+
+    subpage_types = ["authors.PersonPage", "authors.AuthorIndexPage", "authors.ResearcherIndexPage"]
+
+    parent_page_types = ["home.HomePage"]
+
+    api_fields = BasePage.api_fields + [
+        APIField("people_index_pages", serializer=DefaultPageSerializer(many=True))
+    ]
+
+    @cached_property
+    def people_index_pages(self):
+        """Return a sample of child pages for rendering in teaser."""
+        return (
+            self.get_children()
+            .not_type(PersonPage)
+            .live()
+            .specific()
+            .order_by("title")
+        )
 
 class AuthorIndexPage(BasePage):
     """Author index page
@@ -31,7 +53,7 @@ class AuthorIndexPage(BasePage):
 
     subpage_types = ["authors.PersonPage"]
 
-    parent_page_types = ["home.HomePage"]
+    parent_page_types = ["authors.PeopleIndexPage"]
 
     api_fields = BasePage.api_fields + [
         APIField("author_pages", serializer=DefaultPageSerializer(many=True))
@@ -60,7 +82,7 @@ class ResearcherIndexPage(BasePage):
 
     subpage_types = ["authors.PersonPage"]
 
-    parent_page_types = ["home.HomePage"]
+    parent_page_types = ["authors.PeopleIndexPage"]
 
     api_fields = BasePage.api_fields + [
         APIField("researcher_pages", serializer=DefaultPageSerializer(many=True))
@@ -117,7 +139,7 @@ class PersonPage(BasePage):
     # DataLayerMixin overrides
     gtm_content_group = "Person page"
 
-    parent_page_types = ["authors.AuthorIndexPage"]
+    parent_page_types = ["authors.PeopleIndexPage"]
     subpage_types = []
 
     default_api_fields = BasePage.default_api_fields + [
