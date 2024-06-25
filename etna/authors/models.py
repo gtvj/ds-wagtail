@@ -40,9 +40,16 @@ class AuthorIndexPage(BasePage):
     @cached_property
     def author_pages(self):
         """Return a sample of child pages for rendering in teaser."""
-        return PersonPage.objects.all().live().specific().exclude(author_summary="").exclude(author_summary=None).order_by("title")
-    
-    
+        return (
+            PersonPage.objects.all()
+            .live()
+            .specific()
+            .exclude(author_summary="")
+            .exclude(author_summary=None)
+            .order_by("title")
+        )
+
+
 class ResearcherIndexPage(BasePage):
     """Author index page
 
@@ -62,7 +69,14 @@ class ResearcherIndexPage(BasePage):
     @cached_property
     def researcher_pages(self):
         """Return a sample of child pages for rendering in teaser."""
-        return PersonPage.objects.all().live().specific().exclude(research_summary="").exclude(research_summary=None).order_by("title")
+        return (
+            PersonPage.objects.all()
+            .live()
+            .specific()
+            .exclude(research_summary="")
+            .exclude(research_summary=None)
+            .order_by("title")
+        )
 
 
 class PersonPage(BasePage):
@@ -184,11 +198,7 @@ class AuthorTag(models.Model):
         if author := self.author:
             if author.author_summary == "":
                 raise ValidationError(
-                    {
-                        "author": [
-                            "An author summary is required for use as an author."
-                        ]
-                    }
+                    {"author": ["An author summary is required for use as an author."]}
                 )
 
 
