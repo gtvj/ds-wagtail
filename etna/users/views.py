@@ -19,3 +19,4 @@ def beta_testers_report(request):
             "group": group,
         },
     )
+

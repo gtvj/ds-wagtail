@@ -151,12 +151,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # django-allauth configuration
+DEFAULT_FROM_EMAIL = "jamesbiggs154@gmail.com"
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_LOGOUT_ON_GET = False  # Bypass logout confirmation form
-ACCOUNT_USERNAME_REQUIRED = False  # Register using email only
+ACCOUNT_USERNAME_REQUIRED = True  # Register using email only
 ACCOUNT_SESSION_REMEMBER = False  # True|False disables "Remember me?" checkbox"
 LOGIN_URL = "/accounts/login"
+SIGNUP_URL = "/accounts/signup"
 LOGIN_REDIRECT_URL = "/"
 WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
 # View access control
@@ -167,7 +169,8 @@ RECORD_DETAIL_REQUIRE_LOGIN = strtobool(
 SEARCH_VIEWS_REQUIRE_LOGIN = strtobool(os.getenv("SEARCH_VIEWS_REQUIRE_LOGIN", "True"))
 # Custom adapter to prevent self-signup
 ACCOUNT_ADAPTER = "etna.users.adapters.NoSelfSignupAccountAdapter"
-ACCOUNT_FORMS = {"login": "etna.users.forms.EtnaLoginForm"}
+ACCOUNT_FORMS = {"login": "etna.users.forms.EtnaLoginForm",
+                 "signup": "etna.users.forms.EtnaSignupForm"}
 
 WSGI_APPLICATION = "config.wsgi.application"
 
