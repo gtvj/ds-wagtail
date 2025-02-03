@@ -193,6 +193,10 @@ class Record(DataLayerMixin, APIModel):
     @cached_property
     def url(self) -> str:
         return self.get_url()
+    
+    @cached_property
+    def non_reference_number_url(self) -> str:
+        return self.get_url(use_reference_number=False)
 
     @cached_property
     def source(self) -> str:

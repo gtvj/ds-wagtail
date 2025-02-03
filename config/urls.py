@@ -17,7 +17,6 @@ from etna.core.decorators import setting_controlled_login_required
 from etna.errors import views as errors_view
 from etna.records import converters
 from etna.records import views as records_views
-from etna.search import views as search_views
 from etna.whatson import views as whatson_views
 
 register_converter(converters.ReferenceNumberConverter, "reference_number")

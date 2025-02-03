@@ -16,10 +16,6 @@ def record_url(
     record: Record,
     is_editorial: bool = False,
     order_from_discovery: bool = False,
-    level_or_archive: str = "",
-    base_record: Record = None,
-    form_group: str = "",
-    use_non_reference_number_url: bool = True,
 ) -> str:
     """
     Return the URL for the provided `record`, which should always be a
@@ -52,43 +48,7 @@ def record_url(
             return TNA_URLS.get("discovery_rec_default_fmt").format(iaid=record.iaid)
 
     if record:
-        if use_non_reference_number_url:
-            return record.non_reference_number_url
-
-        if form_group in ("archive", "creator"):
-            return record.non_reference_number_url
-        if form_group == "nonTna":
-            is_tna = False
-        elif form_group in ("tna", "digitised"):
-            is_tna = True
-        else:
-            is_tna = record.is_tna
-
-            if base_record:
-                is_tna = base_record.is_tna
-
-        if is_tna:
-            reference_number_override_list = [
-                "Lettercode",  # same as Department, but returned in API response
-                level_name(level_code=1, is_tna=is_tna),
-                level_name(level_code=2, is_tna=is_tna),
-                level_name(level_code=4, is_tna=is_tna),
-                level_name(level_code=5, is_tna=is_tna),
-                "Archive",  # no level specified for this value
-            ]
-        else:
-            reference_number_override_list = [
-                level_name(level_code=1, is_tna=is_tna),
-                level_name(level_code=9, is_tna=is_tna),
-                level_name(level_code=10, is_tna=is_tna),
-                level_name(level_code=11, is_tna=is_tna),
-                "Archive",  # no level specified for this value
-            ]
-
-        if level_or_archive in reference_number_override_list:
-            return record.non_reference_number_url
-        else:
-            return record.url
+        return record.url
     return ""
 
 
