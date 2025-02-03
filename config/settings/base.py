@@ -162,7 +162,6 @@ WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
 RECORD_DETAIL_REQUIRE_LOGIN = strtobool(
     os.getenv("RECORD_DETAIL_REQUIRE_LOGIN", "True")
 )
-SEARCH_VIEWS_REQUIRE_LOGIN = strtobool(os.getenv("SEARCH_VIEWS_REQUIRE_LOGIN", "True"))
 # Custom adapter to prevent self-signup
 ACCOUNT_ADAPTER = "etna.users.adapters.NoSelfSignupAccountAdapter"
 ACCOUNT_FORMS = {"login": "etna.users.forms.EtnaLoginForm"}
